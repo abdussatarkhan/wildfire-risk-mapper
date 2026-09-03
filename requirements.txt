@@ -1,0 +1,33 @@
+# Core Geospatial Stack
+geopandas>=0.14.0
+rasterio>=1.3.8
+shapely>=2.0.2
+pyproj>=3.6.1
+fiona>=1.9.5
+xarray>=2023.10.0
+rioxarray>=0.15.0
+
+# Spatial Statistics & Econometrics
+libpysal>=4.9.2
+esda>=2.5.1
+pointpats>=2.4.0
+scipy>=1.11.4
+
+# Data Processing & Machine Learning
+numpy>=1.26.0
+pandas>=2.1.3
+scikit-learn>=1.3.2
+joblib>=1.3.2
+
+# Visualization & Interactive Mapping
+folium>=0.15.1
+branca>=0.7.0
+matplotlib>=3.8.2
+seaborn>=0.13.0
+
+# Network, Utilities & Config
+requests>=2.31.0
+pyyaml>=6.0.1
+tqdm>=4.66.1
+python-dotenv>=1.0.0
+jinja2>=3.1.2

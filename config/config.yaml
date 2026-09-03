@@ -1,0 +1,172 @@
+project:
+  name: "wildfire-risk-mapper"
+  title: "Wildfire Spread Risk Mapper & Geospatial Hazard Assessment"
+  version: "1.0.0"
+  domain: "Climate & Environmental Data Science"
+  lead_analyst: "Senior Geospatial Data Analyst"
+
+spatial:
+  crs_geographic: "EPSG:4326"
+  crs_projected: "EPSG:3310" # California Albers Equal Area (meters)
+  grid_resolution_meters: 250
+  bounding_box_wgs84:
+    min_lon: -124.482
+    max_lon: -114.131
+    min_lat: 32.529
+    max_lat: 42.010
+  spatial_cv:
+    block_size_km: 25
+    n_splits: 5
+    random_state: 42
+
+data_sources:
+  nasa_firms:
+    source_name: "NASA FIRMS (Fire Information for Resource Management System)"
+    instrument: "VIIRS_SNPP_NRT"
+    supplementary_instrument: "MODIS_NRT"
+    base_url: "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
+    confidence_min: 50
+    detection_history_years: 10
+    nominal_resolution_m: 375
+  
+  noaa_fire_weather:
+    source_name: "NOAA National Centers for Environmental Information / RTMA"
+    base_url: "https://www.ncei.noaa.gov/access/services/data/v1"
+    variables:
+      - "temperature_2m"
+      - "relative_humidity_2m"
+      - "wind_speed_10m"
+      - "wind_gust_10m"
+      - "precipitation_24h"
+      - "energy_release_component"
+      - "burning_index"
+    fwi_thresholds:
+      extreme_wind_ms: 15.0
+      critical_rh_percent: 15.0
+  
+  usgs_landfire:
+    source_name: "USGS LANDFIRE (Landscape Fire and Resource Management Planning Tools)"
+    base_url: "https://landfire.gov/data-dictionary"
+    native_resolution_m: 30
+    products:
+      evt: "Existing Vegetation Type (EVT)"
+      fbfm40: "Scott & Burgan 40 Fire Behavior Fuel Models"
+      canopy_cover: "Canopy Cover (CC)"
+      canopy_height: "Canopy Height (CH)"
+      canopy_base_height: "Canopy Base Height (CBH)"
+      elevation_dem: "USGS 3D Elevation Program (3DEP) DEM"
+  
+  census_tiger:
+    source_name: "US Census Bureau TIGER/Line & Housing Density"
+    base_url: "https://www2.census.gov/geo/tiger"
+    layers:
+      - "roads_primary_secondary"
+      - "urban_areas"
+      - "census_tracts_population"
+      - "wui_zones"
+
+feature_engineering:
+  topographic_features:
+    - "elevation_m"
+    - "slope_degrees"
+    - "aspect_degrees"
+    - "terrain_ruggedness_index"
+    - "topographic_wetness_index"
+  vegetation_fuel_features:
+    - "fuel_model_group"
+    - "canopy_cover_pct"
+    - "canopy_height_m"
+    - "fuel_continuity_index"
+  weather_climate_features:
+    - "daily_max_temp_c"
+    - "daily_min_relative_humidity"
+    - "wind_speed_ms"
+    - "wind_gust_ms"
+    - "fwi_fire_weather_index"
+    - "drought_keetch_byram_index"
+  anthropogenic_features:
+    - "dist_to_primary_road_m"
+    - "dist_to_secondary_road_m"
+    - "population_density_km2"
+    - "dist_to_wui_interface_m"
+    - "powerline_corridor_proximity_m"
+  historical_burn_features:
+    - "burn_frequency_10yr"
+    - "years_since_last_burn"
+    - "kde_hotspot_density"
+
+spatial_analysis:
+  morans_i:
+    k_nearest_neighbors: 8
+    spatial_weight_type: "knn" # or 'queen', 'rook'
+    monte_carlo_permutations: 999
+    significance_alpha: 0.05
+  kernel_density:
+    bandwidth_meters: 5000
+    kernel_type: "gaussian"
+    metric: "euclidean"
+  hotspot_clustering:
+    algorithm: "dbscan"
+    eps_meters: 10000
+    min_samples: 12
+
+modeling:
+  target_column: "fire_ignition_or_spread_event"
+  sampling_strategy: "stratified_spatial"
+  spatial_kfold_splits: 5
+  logistic_regression:
+    penalty: "l2"
+    C: 1.0
+    solver: "lbfgs"
+    max_iter: 1000
+    class_weight: "balanced"
+  random_forest:
+    n_estimators: 250
+    max_depth: 16
+    min_samples_split: 8
+    min_samples_leaf: 4
+    class_weight: "balanced_subsample"
+    n_jobs: -1
+    random_state: 42
+  evaluation_metrics:
+    - "roc_auc"
+    - "average_precision_pr_auc"
+    - "f1_score"
+    - "brier_score"
+
+risk_classification:
+  tiers:
+    1:
+      name: "Low"
+      probability_range: [0.00, 0.20]
+      color_hex: "#2ca25f"
+      action_guidance: "Routine fuel monitoring and standard seasonal readiness."
+    2:
+      name: "Moderate"
+      probability_range: [0.20, 0.40]
+      color_hex: "#ffeb3b"
+      action_guidance: "Heightened reconnaissance during elevated wind events; inspect defensible space."
+    3:
+      name: "High"
+      probability_range: [0.40, 0.60]
+      color_hex: "#fe9929"
+      action_guidance: "Pre-position wildland fire suppression crews; issue burn bans."
+    4:
+      name: "Very High"
+      probability_range: [0.60, 0.80]
+      color_hex: "#d95f0e"
+      action_guidance: "Enact public safety power shutoff warnings; restrict high-hazard recreational corridors."
+    5:
+      name: "Extreme"
+      probability_range: [0.80, 1.00]
+      color_hex: "#990000"
+      action_guidance: "Immediate red-flag community warnings, asset staging, and evacuation readiness alert."
+
+output_paths:
+  processed_grid: "data/processed/ca_wildfire_grid_250m.parquet"
+  features_dataset: "data/processed/wildfire_features_tabular.parquet"
+  spatial_cv_results: "reports/spatial_block_cv_metrics.json"
+  trained_model: "models/wildfire_rf_risk_model.joblib"
+  risk_geotiff: "data/processed/california_wildfire_risk_250m.tif"
+  geojson_summary: "data/processed/wildfire_risk_summary.geojson"
+  interactive_map_html: "app/wildfire_risk_map.html"
