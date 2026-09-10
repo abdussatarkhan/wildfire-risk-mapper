@@ -1,5 +1,6 @@
 # Geospatial Wildfire Spread Risk & Hazard Mapping System
 
+[![CI](https://github.com/abdussatarkhan/wildfire-risk-mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/abdussatarkhan/wildfire-risk-mapper/actions)
 [![GeoPandas](https://img.shields.io/badge/GIS-GeoPandas-2E7D32?style=for-the-badge&logo=python&logoColor=white)](https://geopandas.org/) [![Rasterio](https://img.shields.io/badge/Raster-Rasterio-00A8E8?style=for-the-badge)](https://rasterio.readthedocs.io/) [![Python](https://img.shields.io/badge/Python-Geospatial_AI-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Author](https://img.shields.io/badge/Author-Abdussatar-E50914?style=for-the-badge&logo=github&logoColor=white)](https://github.com/abdussatarkhan)
 
@@ -55,6 +56,16 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 # Install dependencies (if requirements.txt exists)
 pip install -r requirements.txt
 ```
+
+---
+
+## 🗺️ Roadmap & Upcoming Features
+
+- [x] Satellite NDVI/EVI & ERA5 weather feature fusion
+- [x] Spatial Autocorrelation (Moran's I) and hazard modeling
+- [ ] High-resolution interactive Leaflet/Mapbox risk interface
+- [ ] Automated daily MODIS / VIIRS satellite fire feed ingestion
+- [ ] Wind spread physical vector simulation
 
 ---
 
