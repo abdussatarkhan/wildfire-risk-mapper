@@ -10,6 +10,13 @@
 # 3. Resample and reproject continuous and categorical rasters to a standardized 250m grid.
 # 4. Perform vector-raster zonal statistics across land management planning units.
 
+### Terrain Derivation Mathematics (Horn's Method):
+Given a $3 \times 3$ moving window of elevation cells $\begin{bmatrix} a & b & c \\ d & e & f \\ g & h & i \end{bmatrix}$:
+- Partial gradients:
+  $$p = \frac{\partial z}{\partial x} = \frac{(c + 2f + i) - (a + 2d + g)}{8 \Delta x}, \quad q = \frac{\partial z}{\partial y} = \frac{(g + 2h + i) - (a + 2b + c)}{8 \Delta y}$$
+- Slope angle: $\theta = \arctan\left(\sqrt{p^2 + q^2}\right) \times \frac{180^\circ}{\pi}$
+- Topographic Roughness Index (TRI): $\text{TRI} = \sqrt{\frac{1}{8} \sum_{j \neq e} (z_j - z_e)^2}$
+
 # %%
 import os
 import sys
